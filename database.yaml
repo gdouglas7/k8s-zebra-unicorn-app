@@ -20,13 +20,13 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind:  StatefulSet # with this type is possible to replicate data between replicas using structure like main/secundary and CQRS
 metadata:
   labels:
     app: postgres
   name: postgres
 spec:
-  replicas: 1
+  replicas: 2
   serviceName: "postgres"
   selector:
     matchLabels:
@@ -39,26 +39,49 @@ spec:
       containers:
       - image: postgres:9.4
         name: postgres
-        env:
-          - name: POSTGRES_DB
-            value: "postgres"
-          - name: POSTGRES_USER
-            value: "postgres"
-          - name: POSTGRES_PASSWORD
-            value: "postgres"
-          - name: PGDATA
-            value: /data/pgdata
+        envFrom:
+        - configMapRef:
+            name: postgres
+        - secretRef:
+            name: postgres
         volumeMounts:
-          - name: postgres-disk
+          - name: postgres-pvc
             mountPath: /data
-  volumeClaimTemplates:
-    - metadata:
-        name: postgres-disk
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 25Gi
+      volumes:
+        - name: postgres-pvc
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim ## ideally the volume has to be Remote. When type kubectl delete for the Statefulset/Deployment, the volume will be deleted
+metadata:
+  name: postgres-pvc
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume ## this type must be managed by K8s Admin
+metadata:
+  name: postgres-pv
+  labels:
+    app: postgres-pv
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+
 
 
 
