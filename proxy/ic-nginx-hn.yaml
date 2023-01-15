@@ -1,3 +1,4 @@
+# for minikube/Microk8s, create Service with hostNetwork enabled
 # based on https://github.com/kubernetes/ingress-nginx/blob/master/deploy/static/provider/baremetal/deploy.yaml
 apiVersion: v1
 kind: Namespace
