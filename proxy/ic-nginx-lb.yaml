@@ -1,3 +1,4 @@
+# for Docker Desktop, create Service with LoadBalancer
 # based on https://github.com/kubernetes/ingress-nginx/blob/master/deploy/static/provider/cloud/deploy.yaml
 apiVersion: v1
 kind: Namespace
